@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="map_style_names">
+        <item>@string/style_auto</item>
+        <item>@string/style_offline</item>
         <item>@string/style_light</item>
         <item>@string/style_dark</item>
         <item>@string/style_osm</item>
     </string-array>
     <string-array name="map_style_values">
+        <item>auto</item>
+        <item>offline</item>
         <item>light</item>
         <item>dark</item>
         <item>osm</item>

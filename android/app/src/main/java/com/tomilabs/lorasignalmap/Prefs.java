@@ -72,7 +72,7 @@ public final class Prefs {
     }
 
     public static String mapStyle(SharedPreferences p) {
-        return p.getString(MAP_STYLE, "light");
+        return p.getString(MAP_STYLE, "auto");
     }
 
     public static boolean colorBySnr(SharedPreferences p) {

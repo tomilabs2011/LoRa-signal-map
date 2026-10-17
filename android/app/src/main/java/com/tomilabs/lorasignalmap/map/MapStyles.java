@@ -6,6 +6,8 @@ import org.osmdroid.tileprovider.tilesource.XYTileSource;
 
 /** Built-in map styles. CARTO tiles are requested in @2x for sharp text on high-DPI screens. */
 public final class MapStyles {
+    public static final String AUTO = "auto";
+    public static final String OFFLINE = "offline";
     public static final String LIGHT = "light";
     public static final String DARK = "dark";
     public static final String OSM = "osm";

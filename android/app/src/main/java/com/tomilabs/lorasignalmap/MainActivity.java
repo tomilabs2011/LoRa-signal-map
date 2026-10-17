@@ -19,6 +19,9 @@ import android.graphics.drawable.GradientDrawable;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -35,9 +38,11 @@ import android.view.WindowManager;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
@@ -53,6 +58,12 @@ import com.tomilabs.lorasignalmap.map.SignalOverlay;
 import com.tomilabs.lorasignalmap.model.DeviceInfo;
 import com.tomilabs.lorasignalmap.model.Measurement;
 import com.tomilabs.lorasignalmap.model.SignalMath;
+import com.tomilabs.lorasignalmap.offline.OfflineMap;
+import com.tomilabs.lorasignalmap.offline.OfflineMapStore;
+import com.tomilabs.lorasignalmap.offline.OsmImporter;
+import com.tomilabs.lorasignalmap.offline.OverpassDownloader;
+import com.tomilabs.lorasignalmap.offline.VectorTileModule;
+import com.tomilabs.lorasignalmap.offline.VectorTileRenderer;
 import com.tomilabs.lorasignalmap.service.MappingService;
 import com.tomilabs.lorasignalmap.ui.Fmt;
 import com.tomilabs.lorasignalmap.ui.LegendView;
@@ -60,17 +71,22 @@ import com.tomilabs.lorasignalmap.ui.MaxHeightScrollView;
 
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.events.MapEventsReceiver;
+import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.MapTileProviderBasic;
+import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
+import org.osmdroid.views.overlay.TilesOverlay;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,11 +96,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public final class MainActivity extends Activity
-        implements LiveState.Listener, SignalOverlay.Listener, MapEventsReceiver {
+        implements LiveState.Listener, SignalOverlay.Listener, MapEventsReceiver, OfflineMapStore.Listener {
     /** Session file name to zoom to when the activity is (re)opened from the session list. */
     public static final String EXTRA_FOCUS_SESSION = "focus_session";
     private static final int REQ_LOCATION = 1;
     private static final int REQ_NOTIFICATIONS = 2;
+    private static final int REQ_IMPORT_MAP = 3;
+    /** Half size of the offline map download area: ~22 x 22 km around the map centre. */
+    private static final double AREA_HALF_LAT = 0.10;
+    private static final double AREA_HALF_LON = 0.15;
     private static final int MAX_DETAIL_ROWS = 60;
 
     private final Handler ui = new Handler(Looper.getMainLooper());
@@ -98,6 +118,10 @@ public final class MainActivity extends Activity
     private RepeaterOverlay repeater;
     private MyLocationNewOverlay myLocation;
     private String appliedStyle;
+    private boolean vectorActive;
+    private OfflineMap appliedOfflineMap;
+    private volatile boolean mapJobCancelled;
+    private boolean mapJobRunning;
 
     private TextView chipUsb;
     private TextView chipWifi;
@@ -174,6 +198,7 @@ public final class MainActivity extends Activity
         }
         LiveState live = LiveState.get();
         live.addListener(this);
+        OfflineMapStore.addListener(this);
         wasRunning = live.running;
         signals.setLive(live.running ? live.points : new ArrayList<Measurement>());
         reloadHistory();
@@ -186,6 +211,7 @@ public final class MainActivity extends Activity
     protected void onPause() {
         ui.removeCallbacks(clock);
         LiveState.get().removeListener(this);
+        OfflineMapStore.removeListener(this);
         saveMapPosition();
         myLocation.disableMyLocation();
         map.onPause();
@@ -309,8 +335,7 @@ public final class MainActivity extends Activity
         map.setMaxZoomLevel(21.0);
         map.setVerticalMapRepetitionEnabled(false);
         map.setScrollableAreaLimitLatitude(85.0, -85.0, 0);
-        appliedStyle = Prefs.mapStyle(prefs);
-        map.setTileSource(MapStyles.source(appliedStyle));
+        appliedStyle = null; // applyPreferences() picks online tiles or the offline map
 
         map.getOverlays().add(new MapEventsOverlay(this));
 
@@ -399,12 +424,7 @@ public final class MainActivity extends Activity
     }
 
     private void applyPreferences() {
-        String style = Prefs.mapStyle(prefs);
-        if (!style.equals(appliedStyle)) {
-            appliedStyle = style;
-            map.setTileSource(MapStyles.source(style));
-        }
-        attribution.setText(map.getTileProvider().getTileSource().getCopyrightNotice());
+        applyMapSource();
         double[] sc = Prefs.scale(prefs);
         boolean bySnr = Prefs.colorBySnr(prefs);
         signals.configure(new ColorScale(sc[0], sc[1]), bySnr, Prefs.direction(prefs),
@@ -584,6 +604,10 @@ public final class MainActivity extends Activity
         } else if (!running && s.error != null) {
             msg = s.error;
             msgColor = err;
+        }
+        if (msg == null) {
+            msg = mapHint();
+            msgColor = warn;
         }
         messageLine.setVisibility(msg != null ? View.VISIBLE : View.GONE);
         if (msg != null) {
@@ -911,10 +935,27 @@ public final class MainActivity extends Activity
         // map style
         box.addView(sectionTitle(R.string.layers_style));
         final RadioGroup style = new RadioGroup(this);
-        final String[] styleKeys = {MapStyles.LIGHT, MapStyles.DARK, MapStyles.OSM};
-        int[] styleNames = {R.string.style_light, R.string.style_dark, R.string.style_osm};
-        addRadios(style, styleNames, indexOf(styleKeys, Prefs.mapStyle(prefs)));
+        final String[] styleKeys = {MapStyles.OFFLINE, MapStyles.LIGHT, MapStyles.DARK, MapStyles.OSM};
+        int[] styleNames = {R.string.style_offline, R.string.style_light, R.string.style_dark, R.string.style_osm};
+        addRadios(style, styleNames, indexOf(styleKeys, effectiveStyle()));
         box.addView(style);
+        TextView offlineInfo = new TextView(this);
+        offlineInfo.setText(offlineMapSummary());
+        offlineInfo.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+        offlineInfo.setTextColor(color(R.color.text_secondary));
+        offlineInfo.setPadding(0, (int) (4 * density), 0, (int) (4 * density));
+        box.addView(offlineInfo);
+        LinearLayout buttons = new LinearLayout(this);
+        buttons.setOrientation(LinearLayout.HORIZONTAL);
+        Button download = new Button(this);
+        download.setText(R.string.offline_download);
+        download.setAllCaps(false);
+        Button importMap = new Button(this);
+        importMap.setText(R.string.offline_import);
+        importMap.setAllCaps(false);
+        buttons.addView(download, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        buttons.addView(importMap, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        box.addView(buttons);
 
         box.addView(sectionTitle(R.string.layers_color_by));
         final RadioGroup metric = new RadioGroup(this);
@@ -951,11 +992,347 @@ public final class MainActivity extends Activity
 
         ScrollView scroll = new ScrollView(this);
         scroll.addView(box);
-        new AlertDialog.Builder(this)
+        final AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.layers_title)
                 .setView(scroll)
                 .setPositiveButton(R.string.done, null)
                 .show();
+        download.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                confirmDownload();
+            }
+        });
+        importMap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                pickMapFile();
+            }
+        });
+    }
+
+    // ------------------------------------------------------------------ map source / offline map
+
+    /** The style actually shown: "auto" means the offline map when there is one. */
+    private String effectiveStyle() {
+        String s = Prefs.mapStyle(prefs);
+        if (MapStyles.AUTO.equals(s)) {
+            return OfflineMapStore.get() != null ? MapStyles.OFFLINE : MapStyles.LIGHT;
+        }
+        return s;
+    }
+
+    private void applyMapSource() {
+        String style = effectiveStyle();
+        OfflineMap om = OfflineMapStore.get();
+        if (MapStyles.OFFLINE.equals(style)) {
+            if (!vectorActive || appliedOfflineMap != om) {
+                map.setTileProvider(VectorTileModule.provider(getResources(), om));
+                TilesOverlay tiles = map.getOverlayManager().getTilesOverlay();
+                tiles.setLoadingBackgroundColor(VectorTileRenderer.LAND);
+                tiles.setLoadingLineColor(VectorTileRenderer.LAND);
+                vectorActive = true;
+                appliedOfflineMap = om;
+            }
+        } else {
+            ITileSource src = MapStyles.source(style);
+            if (vectorActive || appliedStyle == null) {
+                map.setTileProvider(new MapTileProviderBasic(getApplicationContext(), src));
+                vectorActive = false;
+                appliedOfflineMap = null;
+            } else if (!style.equals(appliedStyle)) {
+                map.setTileSource(src);
+            }
+        }
+        appliedStyle = style;
+        attribution.setText(map.getTileProvider().getTileSource().getCopyrightNotice());
+        map.invalidate();
+    }
+
+    @Override
+    public void onOfflineMapChanged(OfflineMap m) {
+        applyMapSource();
+        refreshStatus();
+    }
+
+    private boolean hasInternet() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        if (cm == null) {
+            return false;
+        }
+        try {
+            Network n = cm.getActiveNetwork();
+            NetworkCapabilities caps = n != null ? cm.getNetworkCapabilities(n) : null;
+            return caps != null && caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                    && caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
+    /** Warning shown when the map background cannot appear, or null. */
+    private String mapHint() {
+        if (mapJobRunning) {
+            return null;
+        }
+        String style = effectiveStyle();
+        if (MapStyles.OFFLINE.equals(style)) {
+            if (OfflineMapStore.isLoaded() && OfflineMapStore.get() == null) {
+                return getString(R.string.hint_no_offline_map);
+            }
+            return null;
+        }
+        if (!hasInternet()) {
+            return getString(OfflineMapStore.get() != null ? R.string.hint_offline_available : R.string.hint_no_internet);
+        }
+        return null;
+    }
+
+    private String offlineMapSummary() {
+        OfflineMap m = OfflineMapStore.get();
+        if (m == null) {
+            return getString(OfflineMapStore.isLoaded() ? R.string.offline_none : R.string.offline_loading);
+        }
+        return getString(R.string.offline_summary, Fmt.dateTime(m.createdMs),
+                m.count(OfflineMap.PATH, OfflineMap.MAJOR), m.count(OfflineMap.BUILDING, OfflineMap.BUILDING),
+                Fmt.num(m.south, 3), Fmt.num(m.west, 3), Fmt.num(m.north, 3), Fmt.num(m.east, 3));
+    }
+
+    private void confirmDownload() {
+        if (mapJobRunning) {
+            return;
+        }
+        IGeoPoint c = map.getMapCenter();
+        final double lat = c.getLatitude();
+        final double lon = c.getLongitude();
+        if (!hasInternet()) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.offline_download)
+                    .setMessage(R.string.offline_no_internet)
+                    .setPositiveButton(R.string.ok, null)
+                    .show();
+            return;
+        }
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.offline_download)
+                .setMessage(getString(R.string.offline_download_msg,
+                        String.format(Locale.US, "%.4f, %.4f", lat, lon)))
+                .setPositiveButton(R.string.offline_download_go, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface d, int which) {
+                        startDownload(lat - AREA_HALF_LAT, lon - AREA_HALF_LON, lat + AREA_HALF_LAT, lon + AREA_HALF_LON);
+                    }
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    private void pickMapFile() {
+        if (mapJobRunning) {
+            return;
+        }
+        Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        i.addCategory(Intent.CATEGORY_OPENABLE);
+        i.setType("*/*");
+        try {
+            startActivityForResult(i, REQ_IMPORT_MAP);
+        } catch (ActivityNotFoundException e) {
+            LiveState.get().showMessage(String.valueOf(e.getMessage()));
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQ_IMPORT_MAP && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            startImport(data.getData());
+        }
+    }
+
+    /** Progress dialog shared by download and import. */
+    private final class MapJob {
+        final AlertDialog dialog;
+        final TextView status;
+
+        MapJob(int title) {
+            LinearLayout box = new LinearLayout(MainActivity.this);
+            box.setOrientation(LinearLayout.VERTICAL);
+            int pad = (int) (22 * density);
+            box.setPadding(pad, (int) (12 * density), pad, 0);
+            ProgressBar bar = new ProgressBar(MainActivity.this, null, android.R.attr.progressBarStyleHorizontal);
+            bar.setIndeterminate(true);
+            box.addView(bar);
+            status = new TextView(MainActivity.this);
+            status.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+            status.setPadding(0, (int) (8 * density), 0, 0);
+            box.addView(status);
+            mapJobCancelled = false;
+            mapJobRunning = true;
+            dialog = new AlertDialog.Builder(MainActivity.this)
+                    .setTitle(title)
+                    .setView(box)
+                    .setCancelable(false)
+                    .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface d, int which) {
+                            mapJobCancelled = true;
+                        }
+                    })
+                    .show();
+        }
+
+        void status(final String text) {
+            ui.post(new Runnable() {
+                @Override
+                public void run() {
+                    status.setText(text);
+                }
+            });
+        }
+
+        void finish(final OfflineMap result, final String error) {
+            ui.post(new Runnable() {
+                @Override
+                public void run() {
+                    mapJobRunning = false;
+                    if (isFinishing() || isDestroyed()) {
+                        return;
+                    }
+                    try {
+                        dialog.dismiss();
+                    } catch (RuntimeException ignored) {
+                        // window gone
+                    }
+                    if (result != null) {
+                        prefs.edit().putString(Prefs.MAP_STYLE, MapStyles.OFFLINE).apply();
+                        applyMapSource();
+                        new AlertDialog.Builder(MainActivity.this)
+                                .setTitle(R.string.offline_ready_title)
+                                .setMessage(getString(R.string.offline_ready_msg,
+                                        result.count(OfflineMap.PATH, OfflineMap.MAJOR),
+                                        result.count(OfflineMap.BUILDING, OfflineMap.BUILDING)))
+                                .setPositiveButton(R.string.ok, null)
+                                .show();
+                    } else if (error != null && !mapJobCancelled) {
+                        new AlertDialog.Builder(MainActivity.this)
+                                .setTitle(R.string.offline_failed_title)
+                                .setMessage(error)
+                                .setPositiveButton(R.string.ok, null)
+                                .show();
+                    }
+                    refreshStatus();
+                }
+            });
+        }
+    }
+
+    private void startDownload(final double s, final double w, final double n, final double e) {
+        final MapJob job = new MapJob(R.string.offline_download);
+        job.status.setText(R.string.offline_stage_connect);
+        final File tmp = new File(getCacheDir(), "overpass.json");
+        final String ua = Configuration.getInstance().getUserAgentValue();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                OfflineMap result = null;
+                String error = null;
+                try {
+                    OfflineMap m = OverpassDownloader.download(s, w, n, e, tmp, ua, new OverpassDownloader.Progress() {
+                        @Override
+                        public boolean onProgress(String stage, long amount) {
+                            if ("download".equals(stage)) {
+                                job.status(getString(R.string.offline_stage_download,
+                                        Fmt.num(amount / 1048576.0, 1)));
+                            } else {
+                                job.status(getString(R.string.offline_stage_build, amount));
+                            }
+                            return !mapJobCancelled;
+                        }
+                    });
+                    job.status(getString(R.string.offline_stage_save));
+                    OfflineMapStore.install(MainActivity.this, m);
+                    result = m;
+                } catch (OsmImporter.Cancelled c) {
+                    error = null;
+                } catch (IOException | RuntimeException ex) {
+                    error = getString(R.string.offline_failed_msg, String.valueOf(ex.getMessage()));
+                } catch (OutOfMemoryError oom) {
+                    error = getString(R.string.offline_failed_msg, "the area is too large for this phone");
+                }
+                //noinspection ResultOfMethodCallIgnored
+                tmp.delete();
+                job.finish(result, error);
+            }
+        }, "offline-map-download").start();
+    }
+
+    private void startImport(final Uri uri) {
+        final MapJob job = new MapJob(R.string.offline_import);
+        job.status.setText(R.string.offline_stage_read);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                OfflineMap result = null;
+                String error = null;
+                InputStream raw = null;
+                try {
+                    raw = getContentResolver().openInputStream(uri);
+                    if (raw == null) {
+                        throw new IOException("cannot open the file");
+                    }
+                    BufferedInputStream in = new BufferedInputStream(raw, 1 << 16);
+                    in.mark(4096);
+                    int first = -1;
+                    for (int i = 0; i < 4096; i++) {
+                        int b = in.read();
+                        if (b < 0 || !Character.isWhitespace(b) && b != 0xEF && b != 0xBB && b != 0xBF) {
+                            first = b;
+                            break;
+                        }
+                    }
+                    in.reset();
+                    OsmImporter imp = new OsmImporter();
+                    OsmImporter.Progress p = new OsmImporter.Progress() {
+                        @Override
+                        public boolean onProgress(int elements) {
+                            job.status(getString(R.string.offline_stage_build, (long) elements));
+                            return !mapJobCancelled;
+                        }
+                    };
+                    if (first == '{') {
+                        imp.readOverpassJson(in, p);
+                    } else if (first == '<') {
+                        imp.readOsmXml(in, p);
+                    } else {
+                        throw new IOException(getString(R.string.offline_bad_file));
+                    }
+                    if (imp.featureCount() == 0) {
+                        throw new IOException(getString(R.string.offline_bad_file));
+                    }
+                    job.status(getString(R.string.offline_stage_save));
+                    OfflineMap m = imp.build("OpenStreetMap file import", null);
+                    OfflineMapStore.install(MainActivity.this, m);
+                    result = m;
+                } catch (OsmImporter.Cancelled c) {
+                    error = null;
+                } catch (IOException | RuntimeException ex) {
+                    error = getString(R.string.offline_failed_msg, String.valueOf(ex.getMessage()));
+                } catch (OutOfMemoryError oom) {
+                    error = getString(R.string.offline_failed_msg, "the file is too large for this phone");
+                } finally {
+                    if (raw != null) {
+                        try {
+                            raw.close();
+                        } catch (IOException ignored) {
+                            // nothing to do
+                        }
+                    }
+                }
+                job.finish(result, error);
+            }
+        }, "offline-map-import").start();
     }
 
     private TextView sectionTitle(int res) {

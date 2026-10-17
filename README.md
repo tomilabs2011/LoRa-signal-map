@@ -28,7 +28,7 @@ can reopen later, and a future desktop tool can analyse
 ## Quick start (in the morning)
 
 ### 1. Install the app on the phone
-1. Copy `releases/LoRaSignalMap-1.0.0.apk` to the phone (or download it from
+1. Copy `releases/LoRaSignalMap-1.1.0.apk` to the phone (or download it from
    GitHub on the phone) and open it. Allow *Install unknown apps* for the file
    manager / browser when asked.
 2. Requires Android 10+. Built for the Mi 10T Pro on LineageOS 22.1; no Google
@@ -53,7 +53,21 @@ blinks briefly when the echo comes back.
 The rooftop repeater does **not** need to be touched — see
 [Repeater v2](#repeater-v2-optional) for what updating it adds.
 
-### 3. Go mapping
+### 3. Get the offline map (once)
+The app draws its own map from OpenStreetMap data stored on the phone, so no
+internet is needed while mapping. Get the data once:
+* **With internet on the phone** (home Wi-Fi, any hotspot): centre the map on
+  Salgótarján → Layers button → **Download offline map**. It fetches about
+  22 × 22 km around the map centre (usually 5–40 MB, 1–3 minutes).
+* **Without internet on the phone**: on a computer, export the area as an
+  `.osm` file (openstreetmap.org → Export, or overpass-turbo → Export → raw
+  OSM data), copy it to the phone, then Layers → **Import map file**.
+
+The map style switches to *Offline map* automatically. The online styles
+(CARTO light/dark, OpenStreetMap) are still there for when you have data;
+without internet the app now says so instead of showing an empty grid.
+
+### 4. Go mapping
 1. Connect the Pico to the phone with a USB-C OTG cable. Android asks
    *"Open LoRa Signal Map to handle Pico W?"* → tick **Always** → **OK**.
 2. In the app tap **Start**. Allow **Location → Precise**, **Notifications**,
@@ -66,7 +80,7 @@ The rooftop repeater does **not** need to be touched — see
 5. Tap **Stop** when done. The session is saved and stays on the map, together
    with all earlier sessions, so the map of the city fills up over time.
 
-### 4. Optional: Wi-Fi link as well
+### 5. Optional: Wi-Fi link as well
 Both links can run at the same time; every result is sent over both and the
 app keeps the first copy, so a wobbly cable costs nothing.
 1. Phone: turn on the hotspot. It **must be 2.4 GHz** and **WPA2** (or
@@ -166,8 +180,11 @@ versions, so update the roof only when convenient.
   ≈1.2 s, so the default cycle (~4 s) transmits ~30 % of the time, the same
   as the original firmware. For compliance set `LSM_MIN_PERIOD_MS = 12000` in
   `settings.toml` (the repeater's echoes count for the repeater too).
-* Map tiles (CARTO / OpenStreetMap) need mobile data; areas you have looked at
-  are cached and work offline later.
+* The offline map is stored in the app's private storage (`files/offline/map.bin`,
+  a compact binary of roads, buildings, land use, water, rail and place names).
+  Downloading again replaces it. Map data © OpenStreetMap contributors (ODbL).
+* Online map tiles (CARTO / OpenStreetMap) need mobile data; areas you have
+  looked at are cached.
 * Nothing here has run on the real phone or Pico yet. The app was exercised in
   Robolectric (Android 14 framework) and the firmware in simulation.
 
@@ -175,6 +192,7 @@ versions, so update the roof only when convenient.
 
 | Symptom | Fix |
 |---|---|
+| Grey grid instead of a map | No offline map yet and no internet: see *Get the offline map* above. |
 | USB chip stays grey | Replug; accept the USB permission dialog; check the cable is a data cable. |
 | "Waiting for the device…" for long | The Pico may run old firmware without `boot.py`: replug it once after copying `boot.py`. |
 | "No data from the device for …" | Pico reset or hung; it restarts itself within ~10 s. Replug if it persists. |

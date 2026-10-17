@@ -6,6 +6,8 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Build;
 
+import com.tomilabs.lorasignalmap.offline.OfflineMapStore;
+
 import org.osmdroid.config.Configuration;
 import org.osmdroid.config.IConfigurationProvider;
 
@@ -27,6 +29,7 @@ public final class App extends Application {
         installCrashLogger(this);
         configureOsmdroid(this);
         createChannels(this);
+        OfflineMapStore.loadAsync(this);
     }
 
     /** Keeps the stack trace of a crash so the next launch can show it. */
