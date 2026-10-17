@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LoRa Signal Map</string>
+
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="usb">USB</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="gps">GPS</string>
+    <string name="rec">REC</string>
+    <string name="reply">Reply</string>
+    <string name="no_reply">No reply</string>
+    <string name="repeater">Repeater</string>
+    <string name="close">Close</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="done">Done</string>
+    <string name="share">Share</string>
+    <string name="delete">Delete</string>
+    <string name="settings">Settings</string>
+    <string name="sessions">Sessions</string>
+
+    <string name="last_beacon">Last beacon</string>
+    <string name="no_beacons_yet">No beacons yet</string>
+    <string name="stat_beacons">Beacons</string>
+    <string name="stat_replies">Replies</string>
+    <string name="stat_time">Time</string>
+    <string name="stat_nogps">No GPS</string>
+
+    <string name="cd_layers">Map layers</string>
+    <string name="cd_locate">Follow my location</string>
+    <string name="cd_fit">Zoom to all data</string>
+    <string name="cd_sessions">Sessions</string>
+    <string name="cd_settings">Settings</string>
+    <string name="cd_start">Start or stop mapping</string>
+    <string name="cd_close">Close details</string>
+
+    <string name="device_idle">Not mapping. Tap Start when the Pico is connected.</string>
+    <string name="device_idle_usb">Pico detected on USB. Tap Start to begin.</string>
+    <string name="device_waiting">Waiting for the device…</string>
+    <string name="device_no_link">Connect the Pico by USB (or start the phone hotspot)</string>
+    <string name="device_silent">No data from the device for %1$s</string>
+    <string name="device_line">Pico fw %1$s · %2$s · seen %3$s</string>
+    <string name="device_legacy">Original firmware (USB console) · seen %1$s</string>
+    <string name="device_radio_error">Device radio error: %1$s</string>
+    <string name="gps_off">GPS off</string>
+    <string name="gps_searching">GPS…</string>
+    <string name="gps_acc">GPS ±%1$s m</string>
+
+    <string name="details_one">Beacon #%1$d</string>
+    <string name="details_many">%1$d beacons here</string>
+    <string name="details_summary">%1$d of %2$d replied</string>
+    <string name="details_phone">Phone side: %1$s</string>
+    <string name="details_repeater">Repeater side: %1$s</string>
+    <string name="details_repeater_na">Repeater side: not reported (repeater v1)</string>
+    <string name="details_more">…and %1$d more</string>
+
+    <string name="layers_title">Map</string>
+    <string name="layers_style">Map style</string>
+    <string name="style_light">Light</string>
+    <string name="style_dark">Dark</string>
+    <string name="style_osm">OpenStreetMap</string>
+    <string name="layers_color_by">Color by</string>
+    <string name="metric_signal">Signal strength (dBm)</string>
+    <string name="metric_snr">SNR (dB)</string>
+    <string name="layers_direction">Direction</string>
+    <string name="dir_weakest">Weaker of both directions</string>
+    <string name="dir_down">Phone side (repeater → phone)</string>
+    <string name="dir_up">Repeater side (phone → repeater)</string>
+    <string name="layers_show">Show</string>
+    <string name="show_track">Track line with color transitions</string>
+    <string name="show_failed">Beacons without reply</string>
+    <string name="show_history">Earlier sessions</string>
+
+    <string name="stop_confirm_title">Stop mapping?</string>
+    <string name="stop_confirm_msg">The session is saved and stays on the map.</string>
+    <string name="repeater_set_title">Repeater location</string>
+    <string name="repeater_set_msg">Put the repeater here?\n%1$s</string>
+    <string name="repeater_set">Set here</string>
+    <string name="repeater_remove">Remove</string>
+    <string name="no_data">No beacons on the map yet</string>
+    <string name="location_needed_title">Location permission needed</string>
+    <string name="location_needed_msg">Every beacon is placed on the map at your GPS position, so mapping needs the location permission.</string>
+    <string name="open_settings">Open settings</string>
+    <string name="gps_disabled_title">Location is turned off</string>
+    <string name="gps_disabled_msg">Turn on Location so the beacons get a position. Mapping starts anyway.</string>
+    <string name="battery_title">Keep mapping in the background</string>
+    <string name="battery_msg">Allow LoRa Signal Map to run without battery restrictions, so logging never pauses while the phone is in your pocket.</string>
+    <string name="allow">Allow</string>
+    <string name="not_now">Not now</string>
+    <string name="crash_title">The app stopped last time</string>
+    <string name="crash_msg">Your session data up to that moment is saved. Details:</string>
+    <string name="usb_attached">Pico connected</string>
+
+    <string name="channel_mapping">Mapping</string>
+    <string name="channel_mapping_desc">Shown while a mapping session is running</string>
+    <string name="notif_starting">Starting…</string>
+    <string name="notif_title">Mapping · %1$s</string>
+    <string name="notif_counts">%1$d beacons · %2$s replies</string>
+    <string name="notif_links">USB %1$s   Wi-Fi %2$s</string>
+
+    <string name="error_foreground">Could not start the mapping service. Check the location permission.</string>
+    <string name="error_log_create">Cannot create the log file: %1$s</string>
+    <string name="error_gps_start">GPS could not be started (permission?)</string>
+
+    <string name="sessions_empty">No sessions yet.\nStart mapping to create one, or import a .jsonl log.</string>
+    <string name="sessions_import">Import log</string>
+    <string name="sessions_show_all">Show all on map</string>
+    <string name="sessions_hide_all">Hide all from map</string>
+    <string name="sessions_export_csv">Export CSV</string>
+    <string name="sessions_share_log">Share log (.jsonl)</string>
+    <string name="sessions_delete_title">Delete session?</string>
+    <string name="sessions_delete_msg">%1$s will be deleted from the phone. This cannot be undone.</string>
+    <string name="sessions_recording">Recording</string>
+    <string name="sessions_interrupted">interrupted</string>
+    <string name="sessions_imported">Imported %1$s</string>
+    <string name="sessions_import_failed">Import failed: %1$s</string>
+    <string name="sessions_summary">%1$s · %2$d beacons · %3$s replies</string>
+    <string name="sessions_unreadable">Unreadable file</string>
+
+    <string name="pref_cat_map">Map</string>
+    <string name="pref_cat_scale">Color scale</string>
+    <string name="pref_cat_wifi">Device Wi-Fi link</string>
+    <string name="pref_cat_repeater">Repeater</string>
+    <string name="pref_cat_field">In the field</string>
+    <string name="pref_cat_about">About</string>
+    <string name="pref_signal_best">Best signal (green), dBm</string>
+    <string name="pref_signal_worst">Worst signal (red), dBm</string>
+    <string name="pref_snr_best">Best SNR (green), dB</string>
+    <string name="pref_snr_worst">Worst SNR (red), dB</string>
+    <string name="pref_wifi_ssid">Phone hotspot name (SSID)</string>
+    <string name="pref_wifi_pass">Hotspot password</string>
+    <string name="pref_wifi_push">Send to the Pico automatically</string>
+    <string name="pref_wifi_push_summary">When the Pico is connected, the app stores these on it. Hotspot must be 2.4 GHz, WPA2.</string>
+    <string name="pref_wifi_invalid">SSID max 32 characters; password 8–63 characters (or empty for an open hotspot)</string>
+    <string name="pref_repeater_lat">Latitude</string>
+    <string name="pref_repeater_lon">Longitude</string>
+    <string name="pref_repeater_hint">Tip: long-press the map to place the repeater.</string>
+    <string name="pref_repeater_clear">Remove repeater location</string>
+    <string name="pref_keep_screen">Keep screen on while mapping</string>
+    <string name="pref_sound">Sound for every beacon</string>
+    <string name="pref_sound_summary">Short beep on reply, low tone when there is no reply</string>
+    <string name="pref_version">Version</string>
+    <string name="pref_log_folder">Log folder</string>
+    <string name="pref_log_format">Log format</string>
+    <string name="not_set">Not set</string>
+</resources>

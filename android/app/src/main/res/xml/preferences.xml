@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/pref_cat_map">
+        <ListPreference
+            android:defaultValue="light"
+            android:entries="@array/map_style_names"
+            android:entryValues="@array/map_style_values"
+            android:key="map_style"
+            android:title="@string/layers_style" />
+        <ListPreference
+            android:defaultValue="signal"
+            android:entries="@array/metric_names"
+            android:entryValues="@array/metric_values"
+            android:key="color_metric"
+            android:title="@string/layers_color_by" />
+        <ListPreference
+            android:defaultValue="weakest"
+            android:entries="@array/direction_names"
+            android:entryValues="@array/direction_values"
+            android:key="color_direction"
+            android:title="@string/layers_direction" />
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="show_track"
+            android:title="@string/show_track" />
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="show_failed"
+            android:title="@string/show_failed" />
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="show_history"
+            android:title="@string/show_history" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_cat_scale">
+        <EditTextPreference
+            android:defaultValue="-80"
+            android:inputType="numberSigned|numberDecimal"
+            android:key="signal_best"
+            android:title="@string/pref_signal_best" />
+        <EditTextPreference
+            android:defaultValue="-135"
+            android:inputType="numberSigned|numberDecimal"
+            android:key="signal_worst"
+            android:title="@string/pref_signal_worst" />
+        <EditTextPreference
+            android:defaultValue="10"
+            android:inputType="numberSigned|numberDecimal"
+            android:key="snr_best"
+            android:title="@string/pref_snr_best" />
+        <EditTextPreference
+            android:defaultValue="-20"
+            android:inputType="numberSigned|numberDecimal"
+            android:key="snr_worst"
+            android:title="@string/pref_snr_worst" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_cat_wifi">
+        <EditTextPreference
+            android:inputType="text"
+            android:key="wifi_ssid"
+            android:singleLine="true"
+            android:title="@string/pref_wifi_ssid" />
+        <EditTextPreference
+            android:inputType="textPassword"
+            android:key="wifi_pass"
+            android:singleLine="true"
+            android:title="@string/pref_wifi_pass" />
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="wifi_push"
+            android:summary="@string/pref_wifi_push_summary"
+            android:title="@string/pref_wifi_push" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_cat_repeater">
+        <EditTextPreference
+            android:inputType="numberSigned|numberDecimal"
+            android:key="repeater_lat"
+            android:title="@string/pref_repeater_lat" />
+        <EditTextPreference
+            android:inputType="numberSigned|numberDecimal"
+            android:key="repeater_lon"
+            android:title="@string/pref_repeater_lon" />
+        <Preference
+            android:key="repeater_clear"
+            android:summary="@string/pref_repeater_hint"
+            android:title="@string/pref_repeater_clear" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_cat_field">
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="keep_screen_on"
+            android:title="@string/pref_keep_screen" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="sound_feedback"
+            android:summary="@string/pref_sound_summary"
+            android:title="@string/pref_sound" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_cat_about">
+        <Preference
+            android:key="about_version"
+            android:selectable="false"
+            android:title="@string/pref_version" />
+        <Preference
+            android:key="about_folder"
+            android:selectable="false"
+            android:title="@string/pref_log_folder" />
+        <Preference
+            android:key="about_format"
+            android:selectable="false"
+            android:title="@string/pref_log_format" />
+    </PreferenceCategory>
+</PreferenceScreen>

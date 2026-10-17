@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="map_style_names">
+        <item>@string/style_light</item>
+        <item>@string/style_dark</item>
+        <item>@string/style_osm</item>
+    </string-array>
+    <string-array name="map_style_values">
+        <item>light</item>
+        <item>dark</item>
+        <item>osm</item>
+    </string-array>
+    <string-array name="metric_names">
+        <item>@string/metric_signal</item>
+        <item>@string/metric_snr</item>
+    </string-array>
+    <string-array name="metric_values">
+        <item>signal</item>
+        <item>snr</item>
+    </string-array>
+    <string-array name="direction_names">
+        <item>@string/dir_weakest</item>
+        <item>@string/dir_down</item>
+        <item>@string/dir_up</item>
+    </string-array>
+    <string-array name="direction_values">
+        <item>weakest</item>
+        <item>down</item>
+        <item>up</item>
+    </string-array>
+</resources>

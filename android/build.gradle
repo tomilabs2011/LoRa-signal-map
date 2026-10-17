@@ -1,0 +1,5 @@
+// Android Studio / Gradle build. The APK in releases/ was produced by build.sh, which uses the
+// same sources, SDK levels and signing key, so both builds install over each other.
+plugins {
+    id "com.android.application" version "8.7.3" apply false
+}

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_import"
+        android:icon="@drawable/ic_folder_open"
+        android:iconTint="#FFFFFF"
+        android:showAsAction="ifRoom"
+        android:title="@string/sessions_import" />
+    <item
+        android:id="@+id/action_show_all"
+        android:showAsAction="never"
+        android:title="@string/sessions_show_all" />
+    <item
+        android:id="@+id/action_hide_all"
+        android:showAsAction="never"
+        android:title="@string/sessions_hide_all" />
+</menu>

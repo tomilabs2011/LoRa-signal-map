@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <org.osmdroid.views.MapView
+        android:id="@+id/map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- status card -->
+    <LinearLayout
+        android:id="@+id/status_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_margin="12dp"
+        android:background="@drawable/card_bg"
+        android:elevation="6dp"
+        android:orientation="vertical"
+        android:paddingStart="12dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="10dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/chip_usb"
+                style="@style/Chip"
+                android:drawableStart="@drawable/ic_usb"
+                android:text="@string/usb" />
+
+            <TextView
+                android:id="@+id/chip_wifi"
+                style="@style/Chip"
+                android:drawableStart="@drawable/ic_wifi"
+                android:text="@string/wifi" />
+
+            <TextView
+                android:id="@+id/chip_gps"
+                style="@style/Chip"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:drawableStart="@drawable/ic_gps"
+                android:text="@string/gps" />
+
+            <TextView
+                android:id="@+id/rec_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:layout_marginStart="4dp"
+                android:background="@drawable/rec_bg"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="center"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:text="@string/rec"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/device_line"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="@string/device_idle"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/message_line"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:maxLines="3"
+            android:textColor="@color/primary"
+            android:textSize="13sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <!-- map buttons -->
+    <LinearLayout
+        android:id="@+id/map_buttons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|center_vertical"
+        android:layout_marginEnd="12dp"
+        android:orientation="vertical">
+
+        <ImageButton
+            android:id="@+id/btn_layers"
+            style="@style/MapButton"
+            android:contentDescription="@string/cd_layers"
+            android:src="@drawable/ic_layers" />
+
+        <ImageButton
+            android:id="@+id/btn_locate"
+            style="@style/MapButton"
+            android:contentDescription="@string/cd_locate"
+            android:src="@drawable/ic_gps" />
+
+        <ImageButton
+            android:id="@+id/btn_fit"
+            style="@style/MapButton"
+            android:contentDescription="@string/cd_fit"
+            android:src="@drawable/ic_fit" />
+
+        <ImageButton
+            android:id="@+id/btn_sessions"
+            style="@style/MapButton"
+            android:contentDescription="@string/cd_sessions"
+            android:src="@drawable/ic_list" />
+
+        <ImageButton
+            android:id="@+id/btn_settings"
+            style="@style/MapButton"
+            android:contentDescription="@string/cd_settings"
+            android:src="@drawable/ic_settings" />
+    </LinearLayout>
+
+    <!-- bottom: legend + control card -->
+    <LinearLayout
+        android:id="@+id/bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/attribution"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="6dp"
+            android:background="@drawable/chip_bg"
+            android:backgroundTint="#CCFFFFFF"
+            android:paddingStart="6dp"
+            android:paddingTop="1dp"
+            android:paddingEnd="6dp"
+            android:paddingBottom="1dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="10sp" />
+
+        <com.tomilabs.lorasignalmap.ui.LegendView
+            android:id="@+id/legend"
+            android:layout_width="250dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/card_bg"
+            android:elevation="4dp" />
+
+        <LinearLayout
+            android:id="@+id/control_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/sheet_bg"
+            android:elevation="12dp"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingTop="16dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="14dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/last_label"
+                        style="@style/StatLabel"
+                        android:text="@string/last_beacon" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <View
+                            android:id="@+id/last_dot"
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:layout_marginEnd="8dp"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/last_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif-medium"
+                            android:maxLines="1"
+                            android:text="@string/no_beacons_yet"
+                            android:textColor="@color/text_primary"
+                            android:textSize="26sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/last_detail"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:maxLines="2"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical">
+
+                    <FrameLayout
+                        android:id="@+id/btn_start"
+                        android:layout_width="66dp"
+                        android:layout_height="66dp"
+                        android:background="@drawable/start_bg"
+                        android:clickable="true"
+                        android:contentDescription="@string/cd_start"
+                        android:elevation="6dp"
+                        android:focusable="true">
+
+                        <ImageView
+                            android:id="@+id/btn_start_icon"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_gravity="center"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_play"
+                            android:tint="#FFFFFF" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/btn_start_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="@string/start"
+                        android:textColor="@color/text_primary"
+                        android:textSize="13sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="10dp"
+                android:background="@color/divider" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/stat_beacons"
+                        style="@style/StatValue"
+                        android:text="0" />
+
+                    <TextView
+                        style="@style/StatLabel"
+                        android:text="@string/stat_beacons" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/stat_replies"
+                        style="@style/StatValue"
+                        android:text="–" />
+
+                    <TextView
+                        style="@style/StatLabel"
+                        android:text="@string/stat_replies" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/stat_time"
+                        style="@style/StatValue"
+                        android:text="0:00" />
+
+                    <TextView
+                        style="@style/StatLabel"
+                        android:text="@string/stat_time" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/stat_nogps"
+                        style="@style/StatValue"
+                        android:text="0" />
+
+                    <TextView
+                        style="@style/StatLabel"
+                        android:text="@string/stat_nogps" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- details sheet (tap on a point) -->
+    <LinearLayout
+        android:id="@+id/details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@drawable/sheet_bg"
+        android:clickable="true"
+        android:elevation="16dp"
+        android:focusable="true"
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="12dp"
+        android:visibility="gone">
+
+        <View
+            android:layout_width="36dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="6dp"
+            android:background="@drawable/handle_bg" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/details_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/details_summary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/details_close"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/map_button_bg"
+                android:contentDescription="@string/cd_close"
+                android:src="@drawable/ic_close"
+                android:tint="@color/text_secondary" />
+        </LinearLayout>
+
+        <com.tomilabs.lorasignalmap.ui.MaxHeightScrollView
+            android:id="@+id/details_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp">
+
+            <LinearLayout
+                android:id="@+id/details_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </com.tomilabs.lorasignalmap.ui.MaxHeightScrollView>
+    </LinearLayout>
+</FrameLayout>

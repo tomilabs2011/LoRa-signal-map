@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#0D47A1</color>
+    <color name="primary_dark">#0A3A86</color>
+    <color name="accent">#1E88E5</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#F2F5F9</color>
+    <color name="divider">#E3E8EF</color>
+    <color name="text_primary">#18202C</color>
+    <color name="text_secondary">#5B6676</color>
+    <color name="text_hint">#8A94A3</color>
+    <color name="state_ok">#2E7D32</color>
+    <color name="state_warn">#E09A00</color>
+    <color name="state_off">#9AA5B1</color>
+    <color name="state_error">#C62828</color>
+    <color name="start">#2E7D32</color>
+    <color name="stop">#C62828</color>
+    <color name="launcher_bg">#0D47A1</color>
+</resources>

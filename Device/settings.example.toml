@@ -1,0 +1,27 @@
+# Optional settings for the LoRa Signal Map device firmware (Device/code.py).
+# Copy the lines you need into the settings.toml on the CIRCUITPY drive.
+# Do NOT use the CIRCUITPY_WIFI_* names for these: those make CircuitPython
+# start its web workflow at boot.
+
+# Name sent in every beacon. Letters, digits, "-" and "_", max 16 chars.
+# LSM_ID = "Tomi"
+
+# Phone hotspot to join for the Wi-Fi link (2.4 GHz, WPA2). Easier: enter it
+# in the app (Settings > Device Wi-Fi); the app pushes it to the Pico over USB
+# and the pushed value wins over these.
+# LSM_WIFI_SSID = "MyPhoneHotspot"
+# LSM_WIFI_PASSWORD = "hotspot-password"
+
+# How long to listen for the repeater's echo after the beacon is sent (ms).
+# LSM_RX_WINDOW_MS = 3500
+
+# Pause after each beacon cycle (ms). The original firmware used 1000.
+# LSM_CYCLE_GAP_MS = 1000
+
+# Minimum time between the start of two beacons (ms). 0 = as fast as the
+# cycle allows. The 869.4-869.65 MHz band has a 10 % duty-cycle limit; one
+# SF12 beacon is ~1.2 s on air, so 12000 keeps the device within it.
+# LSM_MIN_PERIOD_MS = 0
+
+# UDP port used on both the Pico and the phone.
+# LSM_UDP_PORT = 47820

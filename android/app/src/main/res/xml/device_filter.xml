@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- CircuitPython boards (Adafruit VID, e.g. Pico W = 239a:8120) -->
+    <usb-device vendor-id="9114" />
+    <!-- Raspberry Pi VID (MicroPython / pico-sdk firmware) -->
+    <usb-device vendor-id="11914" />
+</resources>
